@@ -1106,14 +1106,76 @@
     window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ showCalNotice: calNoticeOn }}, '*');
   }
 
-  // ─── Stats (placeholders) ────────────────────
+  // ─── Stats desde Google Sheets ───────────────
   function setStats(total, citas, pend, conf) {
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-citas').textContent = citas;
     document.getElementById('stat-pendientes').textContent = pend;
     document.getElementById('stat-conf').textContent = conf;
   }
-  setStats('—', '—', '—', '—');
+
+  async function loadStats() {
+    const SHEET_ID = '1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw';
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      const raw = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+      if (!raw) return;
+      const data = JSON.parse(raw[1]);
+      const cols = data.table.cols;
+      const rows = data.table.rows;
+
+      // Map column labels to indexes
+      const idx = {};
+      cols.forEach((c, i) => { idx[c.label] = i; });
+
+      const now = new Date();
+      const curMonth = now.getMonth();
+      const curYear  = now.getFullYear();
+
+      let total = 0, citas = 0, porConfirmar = 0, confirmados = 0;
+
+      rows.forEach(row => {
+        const c = row.c;
+        if (!c || !c[0] || !c[0].v) return; // fila vacía
+
+        total++;
+
+        // Citas este mes — columna "Fecha Cita" formato "DD/MM/YYYY HH:MM"
+        const fi = idx['Fecha Cita'];
+        if (fi !== undefined && c[fi] && c[fi].v) {
+          const parts = String(c[fi].v).split(' ')[0].split('/');
+          if (parts.length === 3) {
+            const m = parseInt(parts[1], 10) - 1;
+            const y = parseInt(parts[2], 10);
+            if (m === curMonth && y === curYear) citas++;
+          }
+        }
+
+        // Por Confirmar — "Confirmar" = "Pendiente" o "Enviado"
+        const ci = idx['Confirmar'];
+        if (ci !== undefined && c[ci] && c[ci].v) {
+          const v = String(c[ci].v).toLowerCase();
+          if (v === 'pendiente' || v === 'enviado') porConfirmar++;
+        }
+
+        // Confirmados — "Confirmado" = "Sí" / "Si" / "yes"
+        const di = idx['Confirmado'];
+        if (di !== undefined && c[di] && c[di].v) {
+          const v = String(c[di].v).toLowerCase().trim();
+          if (v === 'sí' || v === 'si' || v === 'yes') confirmados++;
+        }
+      });
+
+      setStats(total, citas, porConfirmar, confirmados);
+    } catch(e) {
+      console.error('Stats error:', e);
+      setStats('—', '—', '—', '—');
+    }
+  }
+
+  loadStats();
 </script>
 
 </body>
