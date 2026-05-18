@@ -1,0 +1,462 @@
+{
+  "name": "RH BIENES RAICES - Agente WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rh-bienes-raices",
+        "options": {
+          "responseCode": {
+            "values": {}
+          }
+        }
+      },
+      "id": "rh-001",
+      "name": "WhatsApp LAB",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        48
+      ],
+      "webhookId": "rodaiagentclaude-rh"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.body.type === 'whatsapp.inbound_message.received' || ($json.body.event === 'messages.upsert' && $json.body.data.key.fromMe === false) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.body.whatsappInboundMessage ? ($json.body.whatsappInboundMessage.text && $json.body.whatsappInboundMessage.text.body ? true : false) : true }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            },
+            {
+              "id": "c3",
+              "leftValue": "={{ $json.body.whatsappInboundMessage ? $json.body.whatsappInboundMessage.to : '' }}",
+              "rightValue": "+50366816248",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "rh-002",
+      "name": "Filtrar Mensaje",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -256,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ (function() {\n  const b = $('WhatsApp LAB').first().json.body;\n  if (b.whatsappInboundMessage) return (b.whatsappInboundMessage.from || '').replace('+','');\n  if (b.data && b.data.key) return b.data.key.remoteJid;\n  return '';\n})() }}",
+        "contextWindowLength": 10
+      },
+      "id": "rh-004",
+      "name": "Memoria Conversacion",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-4-6",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-4-6"
+        },
+        "options": {}
+      },
+      "id": "rh-005",
+      "name": "Claude Sonnet RH",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        272
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "KwjRVCogxnvduqoE",
+          "name": "Anthropic RODAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ (function() {\n  const b = $json.body;\n  const wa = b.whatsappInboundMessage;\n  const evo = b.data;\n  if (wa) {\n    const phone = (wa.from || '').replace('+','');\n    const nameStr = (wa.customerProfile && wa.customerProfile.name) ? wa.customerProfile.name : phone;\n    const msg = wa.text && wa.text.body ? wa.text.body : '';\n    return \"Datos del contacto:\\n- Telefono: \" + phone + \"\\n- Nombre WA: \" + nameStr + \"\\n\\nMensaje: \" + msg;\n  } else if (evo) {\n    const phone = evo.key && evo.key.remoteJid ? evo.key.remoteJid.split('@')[0] : '';\n    const nameStr = evo.pushName || phone;\n    const msg = evo.message && evo.message.conversation ? evo.message.conversation : (evo.message && evo.message.extendedTextMessage ? evo.message.extendedTextMessage.text : '');\n    return \"Datos del contacto:\\n- Telefono: \" + phone + \"\\n- Nombre WA: \" + nameStr + \"\\n\\nMensaje: \" + msg;\n  }\n  return '';\n})() }}",
+        "options": {
+          "systemMessage": "## IDENTIDAD\nEres RUTH, la asistente virtual de RH Bienes Raíces.\nRH Bienes Raíces es una empresa especializada en asesoría inmobiliaria en la compra, venta y alquiler de propiedades en Costa Rica.\nFundada por Ruth Hernández, con sede en Santa Ana, San José, Costa Rica.\nValores: asesoría profesional, integridad y transparencia, alta satisfacción del cliente.\n\n## CONTACTO RH BIENES RAÍCES\n- Teléfono: +50660523537\n- Email: ruth@rh-bienesraices.com\n- Web: rh-bienesraices.com\n- Facebook: @ruthhernandezbienesraices\n- Instagram: @rh.bienesraices\n- Ubicación: Santa Ana, San José, Costa Rica\n\n## SERVICIOS\n1. Compra de propiedades — Acompañamiento completo en el proceso de compra\n2. Venta de propiedades — Gestión profesional para vender tu propiedad al mejor precio\n3. Alquiler de propiedades — Casas y apartamentos en alquiler\n4. Intercambio de propiedades — Permuta de bienes raíces\n5. Administración y gestión de propiedades — Gestión integral de inmuebles\n6. Asesoría en inversiones inmobiliarias — Consultoría para invertir en bienes raíces\n7. Orientación legal y financiera — Apoyo en trámites legales y financiamiento\n\n## PORTAFOLIO ACTUAL\n- 45+ propiedades activas en Costa Rica\n- 27 casas en venta | 12 apartamentos en venta\n- 11 casas en alquiler | 6 apartamentos en alquiler\n- Terrenos y otros tipos de propiedades\n- Rango de precios: $110,000 - $1,800,000 USD\n\n## IDIOMA\nDetecta el idioma del usuario y responde siempre en el mismo idioma.\n\n## SALUDO INICIAL\nSi es el primer mensaje tras \"Hola RUTH\", responde:\n\"¡Hola! Soy RUTH, la asistente virtual de RH Bienes Raíces. 🏠\nEstoy aquí para ayudarte con todo lo relacionado a propiedades en Costa Rica.\n\n¿En qué puedo ayudarte hoy?\n1️⃣ Quiero comprar una propiedad\n2️⃣ Quiero vender mi propiedad\n3️⃣ Busco una propiedad en alquiler\n4️⃣ Información sobre nuestros servicios\n5️⃣ Agendar una cita con un asesor\"\n\n## OPCIÓN 1 — COMPRA\nPregunta: ¿Qué tipo de propiedad busca? (casa, apartamento, terreno), ¿zona de preferencia?, ¿presupuesto aproximado?\nInforma que tenemos 39+ propiedades en venta desde $110,000 hasta $1,800,000 USD.\nOfrece agendar una cita para mostrar opciones personalizadas.\n\n## OPCIÓN 2 — VENTA\nPregunta: ¿Qué tipo de propiedad desea vender?, ¿ubicación?, ¿precio esperado?\nExplica el proceso: valoración gratuita → publicación → acompañamiento hasta el cierre.\nOfrece agendar cita para valoración.\n\n## OPCIÓN 3 — ALQUILER\nInforma: 17 propiedades disponibles en alquiler (11 casas + 6 apartamentos).\nPregunta: ¿zona de preferencia?, ¿presupuesto mensual?, ¿cuántas habitaciones?\nOfrece agendar visita.\n\n## OPCIÓN 4 — SERVICIOS\nDescribe los 7 servicios disponibles. Destaca el acompañamiento personalizado y la transparencia en todos los procesos.\n\n## OPCIÓN 5 — AGENDAR CITA (FLUJO CRÍTICO)\nRecopila 1 campo a la vez:\nCampo 1: Nombre completo\nCampo 2: ¿Qué servicio necesita? (compra/venta/alquiler/inversión/otro)\nCampo 3: Fecha y hora preferida\n\nCuando tengas los 3 campos, muestra el resumen y pregunta UNA sola vez:\n\"¿Confirmamos tu cita? Responde *Sí* para confirmar.\"\n\nPASO FINAL — cuando el cliente confirme con cualquier respuesta positiva (sí, si, claro, ok, listo, perfecto, correcto, exacto, afirmativo, yes, etc.) O responda a la pregunta de confirmación:\nEnvía ESTE mensaje exacto (adaptando los datos):\n\n\"✅ ¡Tu cita está confirmada!\n\nNombre: [nombre]\nServicio: [servicio]\nFecha: [fecha]\nHora: [hora]\nTeléfono: [teléfono del WhatsApp]\n\nNuestro equipo se comunicará contigo pronto. ¡Hasta pronto!\"\n\nY en la MISMA respuesta, al final (invisible para el cliente):\n[CITA:{\"nombre\":\"[v]\",\"servicio\":\"[v]\",\"fecha\":\"[v]\",\"hora\":\"[v]\",\"telefono\":\"[telefono]\",\"notas\":\"\"}]\n\nREGLAS CRÍTICAS:\n- NUNCA te quedes sin responder después de una confirmación\n- NUNCA pidas el teléfono — ya lo tienes del WhatsApp\n- El bloque [CITA:{...}] es OBLIGATORIO en la respuesta de confirmación\n- Si el cliente dice \"sí\", \"no\" (al preguntarle algo), \"correcto\", \"exacto\" — siempre responde con la confirmación de cita\n\n\n## FORMATO WHATSAPP (OBLIGATORIO)\n- NO uses ** (doble asterisco), usa *asterisco simple* para negrita\n- NO uses --- (separadores)\n- NO uses ## en tus respuestas al cliente\n- NO uses listas con guion (- item)\n- Respuestas limpias y directas\n\n## CAPTACIÓN DE LEADS\nSiempre que un usuario muestre interés real (compra, venta, inversión), intenta obtener:\n- Nombre\n- Correo electrónico\n- Teléfono\nAl finalizar incluye: [LEAD:{\"nombre\":\"[v]\",\"correo\":\"[v]\",\"telefono\":\"[v]\",\"interes\":\"[v]\"}]\n\n## ESCALACIÓN\nSi el usuario pide hablar con Ruth directamente o necesita atención urgente:\n\"Con gusto te comunico con Ruth Hernández directamente. Puedes contactarla por:\n📞 +50660523537\n✉️ ruth@rh-bienesraices.com\nTambién puedes visitarnos en Santa Ana, San José, Costa Rica.\"\n\n## PROHIBIDO\n- NUNCA inventar propiedades específicas o precios exactos sin confirmación\n- NUNCA comprometerte a disponibilidad sin verificar\n- NUNCA mezclar idiomas en una respuesta"
+        }
+      },
+      "id": "rh-006",
+      "name": "Agente RH",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {},
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "[CITA:",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "rh-007",
+      "name": "Detectar Cita",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        544,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output || '';\nconst match = output.match(/\\[CITA:(\\{[^\\]]+\\})\\]/);\nlet cita = {};\nif (match) {\n  try { cita = JSON.parse(match[1]); } catch(e) {}\n}\nconst cleanText = output.replace(/\\[CITA:\\{[^\\]]+\\}\\]/, '').trim();\nconst b = $('WhatsApp LAB').first().json.body;\nconst wa = b.whatsappInboundMessage;\nconst evo = b.data;\nconst remoteJid = wa ? (wa.from || '').replace('+','') : (evo && evo.key ? evo.key.remoteJid.split('@')[0] : '');\nreturn [{ json: { cleanText, cita, remoteJid } }];"
+      },
+      "id": "rh-008",
+      "name": "Parsear Cita",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "2f50553d8d6208ad068a207730299528"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  from: \"50366816248\",\n  to: ($('WhatsApp LAB').first().json.body.whatsappInboundMessage ? ($('WhatsApp LAB').first().json.body.whatsappInboundMessage.from || '').replace('+','') : $('WhatsApp LAB').first().json.body.data.key.remoteJid.split('@')[0]),\n  type: \"text\",\n  text: { body: $json.cleanText }\n}) }}",
+        "options": {}
+      },
+      "id": "rh-010",
+      "name": "Enviar Respuesta con Cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "2f50553d8d6208ad068a207730299528"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  from: \"50366816248\",\n  to: ($('WhatsApp LAB').first().json.body.whatsappInboundMessage ? ($('WhatsApp LAB').first().json.body.whatsappInboundMessage.from || '').replace('+','') : $('WhatsApp LAB').first().json.body.data.key.remoteJid.split('@')[0]),\n  type: \"text\",\n  text: { body: ($json.output || '').replace(/\\[LEAD:\\{[^\\]]+\\}\\]/g, '').replace(/\\[CITA:\\{[^\\]]+\\}\\]/g, '').trim() }\n}) }}",
+        "options": {}
+      },
+      "id": "rh-011",
+      "name": "Enviar Respuesta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        768,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {},
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "[LEAD:",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "rh-012",
+      "name": "Detectar Lead",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        544,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://snknbzmcpcxybbgpzyua.supabase.co/rest/v1/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNua25iem1jcGN4eWJiZ3B6eXVhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDg3NjQ5MSwiZXhwIjoyMDkwNDUyNDkxfQ.ktvTHkVTVxBGv6UskOgVVjr0oktzaWHY3oQe6iQj4gk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNua25iem1jcGN4eWJiZ3B6eXVhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDg3NjQ5MSwiZXhwIjoyMDkwNDUyNDkxfQ.ktvTHkVTVxBGv6UskOgVVjr0oktzaWHY3oQe6iQj4gk"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ \n  (() => {\n    const output = $('Agente RH').first().json.output || '';\n    const match = output.match(/\\[LEAD:(\\{[^\\]]+\\})\\]/);\n    let lead = {};\n    try { if(match) lead = JSON.parse(match[1]); } catch(e) {}\n    return JSON.stringify({\n      nombre: lead.nombre || $('WhatsApp LAB').first().json.body.data.pushName || '',\n      telefono: $('WhatsApp LAB').first().json.body.data.key.remoteJid.split('@')[0],\n      correo: lead.correo || '',\n      fuente: 'whatsapp',\n      estado: 'nuevo',\n      notas: 'Interés: ' + (lead.interes || ''),\n      tenant_id: '6d4262ce-3277-4a3f-8a3d-06209b0e2716'\n    });\n  })()\n}}",
+        "options": {}
+      },
+      "id": "rh-013",
+      "name": "Guardar Lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        768,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "2f50553d8d6208ad068a207730299528"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  from: \"50366816248\",\n  to: \"50377420672\",\n  type: \"text\",\n  text: { body: \"🏠 *Nuevo cliente interesado - RH Bienes Raíces*\\n\\n\" +\n    \"📋 *Datos de la cita:*\\n\" +\n    \"• Nombre: \" + ($json.cita.nombre || 'No indicado') + \"\\n\" +\n    \"• Teléfono: \" + ($json.remoteJid || 'No indicado') + \"\\n\" +\n    \"• Servicio: \" + ($json.cita.servicio || 'No indicado') + \"\\n\" +\n    \"• Fecha: \" + ($json.cita.fecha || 'Por coordinar') + \"\\n\" +\n    \"• Hora: \" + ($json.cita.hora || 'Por coordinar') + \"\\n\" +\n    \"• Notas: \" + ($json.cita.notas || '-')\n  }\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1232,
+        -144
+      ],
+      "id": "cc4d17e0-620e-42bb-8caf-3aa66472c34b",
+      "name": "Avisar Vendedor"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp LAB": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Agente RH",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Claude Sonnet RH": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente RH",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria Conversacion": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente RH",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente RH": {
+      "main": [
+        [
+          {
+            "node": "Detectar Cita",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Detectar Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detectar Cita": {
+      "main": [
+        [
+          {
+            "node": "Parsear Cita",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Cita": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta con Cita",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Avisar Vendedor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detectar Lead": {
+      "main": [
+        [
+          {
+            "node": "Guardar Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "b519b545-4ee1-4b98-9f8a-11e55c712d5b",
+  "meta": {
+    "instanceId": "946060f9d03aae3a7f3b3745b5597dd04f16e907beb9bc1e644b546ce2299e41"
+  },
+  "id": "QqXzhKByw1ZF7ax1",
+  "tags": []
+}

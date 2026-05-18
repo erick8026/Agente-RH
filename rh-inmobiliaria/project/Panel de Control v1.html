@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Control — RH Inmobiliaria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-bg: #1A2B3C;
+      --sidebar-width: 230px;
+      --accent: #C9A84C;
+      --accent-light: #F0DFA0;
+      --surface: #F5F7FA;
+      --white: #FFFFFF;
+      --text-primary: #1A2B3C;
+      --text-secondary: #6B7A8D;
+      --border: #E2E8F0;
+      --tab-active: #1A2B3C;
+      --tab-inactive: #8A98A8;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+      --radius: 10px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--surface);
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    /* ─── Layout ────────────────────────────── */
+    .app {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ─── Sidebar ───────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      z-index: 10;
+    }
+
+    .sidebar-logo {
+      padding: 28px 24px 24px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .sidebar-logo .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-mark {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-mark svg { display: block; }
+    .brand-text { display: flex; flex-direction: column; }
+    .brand-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.1;
+      letter-spacing: .3px;
+    }
+    .brand-sub {
+      font-size: 10px;
+      font-weight: 400;
+      color: rgba(255,255,255,.45);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.28);
+      padding: 12px 10px 6px;
+      margin-top: 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: rgba(255,255,255,.55);
+      font-size: 13.5px;
+      font-weight: 400;
+      transition: background .15s, color .15s;
+      user-select: none;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.9);
+    }
+    .nav-item.active {
+      background: rgba(201,168,76,.15);
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .nav-item svg { flex-shrink: 0; opacity: .8; }
+    .nav-item.active svg { opacity: 1; }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .date-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,.4);
+      font-size: 12px;
+    }
+    .date-chip .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #4ADE80;
+      box-shadow: 0 0 6px #4ADE80;
+      flex-shrink: 0;
+    }
+
+    /* ─── Main ──────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* ─── Top Bar ───────────────────────────── */
+    .topbar {
+      height: 56px;
+      min-height: 56px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+    }
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .topbar-title span {
+      font-weight: 300;
+      color: var(--text-secondary);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: background .15s, border-color .15s;
+    }
+    .btn-icon:hover { background: var(--surface); border-color: #c8d0dc; }
+
+    .btn-primary {
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 8px;
+      background: var(--accent);
+      border: none;
+      color: var(--sidebar-bg);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: opacity .15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-primary:hover { opacity: .88; }
+
+    /* ─── Tab Bar ───────────────────────────── */
+    .tabbar {
+      display: flex;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      gap: 0;
+    }
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--tab-inactive);
+      position: relative;
+      transition: color .15s;
+      font-family: 'DM Sans', sans-serif;
+      white-space: nowrap;
+    }
+    .tab::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px 2px 0 0;
+      transform: scaleX(0);
+      transition: transform .2s;
+    }
+    .tab.active { color: var(--text-primary); }
+    .tab.active::after { transform: scaleX(1); }
+    .tab svg { flex-shrink: 0; }
+
+    /* ─── Content ───────────────────────────── */
+    .content-area {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .panel {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      padding: 20px 24px;
+      gap: 16px;
+      overflow: hidden;
+    }
+    .panel.active { display: flex; }
+
+    /* ─── Split View ────────────────────────── */
+    .split-view {
+      position: absolute;
+      inset: 0;
+      display: none;
+      gap: 16px;
+      padding: 20px 24px;
+      overflow: hidden;
+    }
+    .split-view.active { display: flex; }
+
+    /* ─── Iframe Card ───────────────────────── */
+    .iframe-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+      flex: 1;
+    }
+    .iframe-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .iframe-card-header .icon-badge {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .icon-badge.green { background: #E8F5E9; }
+    .icon-badge.blue  { background: #E3F0FF; }
+
+    .iframe-card-header .info { flex: 1; min-width: 0; }
+    .iframe-card-header .label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .iframe-card-header .sublabel {
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .iframe-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .iframe-link {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .iframe-link:hover { background: #eaecf0; }
+
+    .iframe-body {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+    }
+    .iframe-body iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 2;
+      transition: opacity .4s;
+    }
+    .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ─── Split handle ──────────────────────── */
+    .split-view.vertical .iframe-card { }
+    .split-view.horizontal { flex-direction: column; }
+
+    /* ─── Responsive ────────────────────────── */
+    @media (max-width: 900px) {
+      .sidebar { width: 64px; min-width: 64px; }
+      .brand-text, .brand-name, .brand-sub, .nav-section-label, .nav-item span, .date-chip span { display: none; }
+      .nav-item { justify-content: center; padding: 10px; }
+      .sidebar-logo { padding: 20px 14px; }
+      .brand { justify-content: center; }
+      .logo-mark { margin: 0 auto; }
+      .sidebar-footer { padding: 12px; justify-content: center; }
+      .date-chip { justify-content: center; }
+    }
+
+    /* ─── View toggle buttons ───────────────── */
+    .view-toggle {
+      display: flex;
+      gap: 2px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .vt-btn {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
+      transition: background .15s, color .15s;
+    }
+    .vt-btn.active {
+      background: var(--white);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .vt-btn:hover:not(.active) { background: rgba(0,0,0,.04); }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ─── Sidebar ─────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">
+        <div class="logo-mark">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L3 8.5V17h5v-4h4v4h5V8.5L10 2Z" fill="#1A2B3C"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">RH Inmobiliaria</span>
+          <span class="brand-sub">Panel de Control</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+
+      <button class="nav-item active" onclick="setView('split')" data-view="split">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="1" width="6" height="14" rx="1.5" fill="currentColor" opacity=".6"/>
+          <rect x="9" y="1" width="6" height="14" rx="1.5" fill="currentColor"/>
+        </svg>
+        <span>Vista completa</span>
+      </button>
+
+      <button class="nav-item" onclick="setView('sheet')" data-view="sheet">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <path d="M1 5h14M5 5v10" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M7 8h6M7 11h6" stroke="currentColor" stroke-width="1.2" opacity=".6"/>
+        </svg>
+        <span>Propiedades</span>
+      </button>
+
+      <button class="nav-item" onclick="setView('calendar')" data-view="calendar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="2.5" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <path d="M5 1v3M11 1v3M1 6.5h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="5.5" cy="10" r="1" fill="currentColor"/>
+          <circle cx="10.5" cy="10" r="1" fill="currentColor"/>
+        </svg>
+        <span>Calendario</span>
+      </button>
+
+      <div class="nav-section-label" style="margin-top:8px;">Accesos</div>
+
+      <a class="nav-item" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank" style="text-decoration:none;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 2Z" stroke="currentColor" stroke-width="1.4" fill="none"/>
+          <path d="M9 2v4h4" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M5.5 9.5h5M5.5 11.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <span>Abrir Sheet</span>
+      </a>
+
+      <a class="nav-item" href="https://calendar.google.com/calendar/u/0" target="_blank" style="text-decoration:none;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M12 2.5l1 1-9 9-1-1 9-9Z" fill="currentColor" opacity=".5"/>
+          <path d="M3 11l1 1-1 1.5L2 13l1-2Z" fill="currentColor"/>
+          <circle cx="12.5" cy="2.5" r="1.5" fill="currentColor"/>
+        </svg>
+        <span>Abrir Calendar</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="date-chip">
+        <div class="dot"></div>
+        <span id="live-date">—</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── Main ────────────────────────────────── -->
+  <div class="main">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-label">Vista completa <span>— Propiedades y Calendario</span></div>
+      <div class="topbar-actions">
+        <div class="view-toggle">
+          <button class="vt-btn active" title="Vista dividida" onclick="setView('split')" data-vt="split">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x=".5" y=".5" width="5" height="13" rx="1" fill="currentColor" opacity=".5"/>
+              <rect x="8.5" y=".5" width="5" height="13" rx="1" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="vt-btn" title="Solo propiedades" onclick="setView('sheet')" data-vt="sheet">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x=".5" y=".5" width="13" height="13" rx="1" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="vt-btn" title="Solo calendario" onclick="setView('calendar')" data-vt="calendar">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x=".5" y=".5" width="13" height="4" rx="1" fill="currentColor" opacity=".4"/>
+              <rect x=".5" y="6.5" width="5.5" height="7" rx="1" fill="currentColor"/>
+              <rect x="8" y="6.5" width="5.5" height="7" rx="1" fill="currentColor" opacity=".6"/>
+            </svg>
+          </button>
+          <button class="vt-btn" title="Vista vertical (apilada)" onclick="setView('stacked')" data-vt="stacked">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x=".5" y=".5" width="13" height="5.5" rx="1" fill="currentColor"/>
+              <rect x=".5" y="8" width="13" height="5.5" rx="1" fill="currentColor" opacity=".5"/>
+            </svg>
+          </button>
+        </div>
+        <a href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank" class="btn-primary" style="text-decoration:none;">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M7 1h5v5M5 8L12 1M1 12V3a1 1 0 011-1h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Abrir en Google
+        </a>
+      </div>
+    </div>
+
+    <!-- Content area -->
+    <div class="content-area">
+
+      <!-- Split view (side by side) -->
+      <div class="split-view active" id="view-split">
+        <!-- Sheet card -->
+        <div class="iframe-card">
+          <div class="iframe-card-header">
+            <div class="icon-badge green">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#34A853" opacity=".15"/>
+                <path d="M4 5.5h8M4 8h8M4 10.5h5" stroke="#34A853" stroke-width="1.4" stroke-linecap="round"/>
+                <rect x="2" y="1" width="12" height="14" rx="1.5" stroke="#34A853" stroke-width="1.2" fill="none"/>
+              </svg>
+            </div>
+            <div class="info">
+              <div class="label">Propiedades</div>
+              <div class="sublabel">Google Sheets — RH Inmobiliaria</div>
+            </div>
+            <div class="iframe-actions">
+              <a class="iframe-link" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                  <path d="M6 1.5h3.5v3.5M4.5 6.5l5-5M1 10V2a.5.5 0 01.5-.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Editar
+              </a>
+            </div>
+          </div>
+          <div class="iframe-body">
+            <div class="loading-overlay" id="load-sheet">
+              <div class="spinner"></div>
+              <div class="loading-text">Cargando hoja de cálculo…</div>
+            </div>
+            <iframe
+              id="sheet-iframe"
+              src="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/htmlview?rm=minimal"
+              onload="hideLoader('load-sheet')"
+              title="Propiedades — Google Sheets"
+              allow="clipboard-read; clipboard-write"
+            ></iframe>
+          </div>
+        </div>
+
+        <!-- Calendar card -->
+        <div class="iframe-card">
+          <div class="iframe-card-header">
+            <div class="icon-badge blue">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="2.5" width="14" height="12" rx="1.5" fill="#4285F4" opacity=".12"/>
+                <rect x="1" y="2.5" width="14" height="12" rx="1.5" stroke="#4285F4" stroke-width="1.2" fill="none"/>
+                <path d="M5 1v3M11 1v3M1 6.5h14" stroke="#4285F4" stroke-width="1.3" stroke-linecap="round"/>
+                <circle cx="5.5" cy="10" r=".9" fill="#4285F4"/>
+                <circle cx="10.5" cy="10" r=".9" fill="#4285F4"/>
+              </svg>
+            </div>
+            <div class="info">
+              <div class="label">Calendario</div>
+              <div class="sublabel">Google Calendar — rodai2026@gmail.com</div>
+            </div>
+            <div class="iframe-actions">
+              <a class="iframe-link" href="https://calendar.google.com/calendar/u/0" target="_blank">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                  <path d="M6 1.5h3.5v3.5M4.5 6.5l5-5M1 10V2a.5.5 0 01.5-.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Abrir
+              </a>
+            </div>
+          </div>
+          <div class="iframe-body">
+            <div class="loading-overlay" id="load-cal">
+              <div class="spinner"></div>
+              <div class="loading-text">Cargando calendario…</div>
+            </div>
+            <iframe
+              id="cal-iframe"
+              src="https://calendar.google.com/calendar/embed?src=rodai2026%40gmail.com&ctz=America%2FMexico_City&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&bgcolor=%23FFFFFF&color=%234285F4"
+              onload="hideLoader('load-cal')"
+              title="Calendario — Google Calendar"
+              frameborder="0"
+              scrolling="no"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sheet only -->
+      <div class="panel" id="view-sheet">
+        <div class="iframe-card" style="flex:1;">
+          <div class="iframe-card-header">
+            <div class="icon-badge green">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#34A853" opacity=".15"/>
+                <path d="M4 5.5h8M4 8h8M4 10.5h5" stroke="#34A853" stroke-width="1.4" stroke-linecap="round"/>
+                <rect x="2" y="1" width="12" height="14" rx="1.5" stroke="#34A853" stroke-width="1.2" fill="none"/>
+              </svg>
+            </div>
+            <div class="info">
+              <div class="label">Propiedades — Vista completa</div>
+              <div class="sublabel">Google Sheets · RH Inmobiliaria</div>
+            </div>
+            <div class="iframe-actions">
+              <a class="iframe-link" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                  <path d="M6 1.5h3.5v3.5M4.5 6.5l5-5M1 10V2a.5.5 0 01.5-.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Editar en Google Sheets
+              </a>
+            </div>
+          </div>
+          <div class="iframe-body">
+            <iframe
+              src="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/htmlview?rm=minimal"
+              title="Propiedades — Google Sheets"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar only -->
+      <div class="panel" id="view-calendar">
+        <div class="iframe-card" style="flex:1;">
+          <div class="iframe-card-header">
+            <div class="icon-badge blue">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="2.5" width="14" height="12" rx="1.5" fill="#4285F4" opacity=".12"/>
+                <rect x="1" y="2.5" width="14" height="12" rx="1.5" stroke="#4285F4" stroke-width="1.2" fill="none"/>
+                <path d="M5 1v3M11 1v3M1 6.5h14" stroke="#4285F4" stroke-width="1.3" stroke-linecap="round"/>
+                <circle cx="5.5" cy="10" r=".9" fill="#4285F4"/>
+                <circle cx="10.5" cy="10" r=".9" fill="#4285F4"/>
+              </svg>
+            </div>
+            <div class="info">
+              <div class="label">Calendario — Vista completa</div>
+              <div class="sublabel">Google Calendar · rodai2026@gmail.com</div>
+            </div>
+            <div class="iframe-actions">
+              <a class="iframe-link" href="https://calendar.google.com/calendar/u/0" target="_blank">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                  <path d="M6 1.5h3.5v3.5M4.5 6.5l5-5M1 10V2a.5.5 0 01.5-.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Abrir en Google Calendar
+              </a>
+            </div>
+          </div>
+          <div class="iframe-body">
+            <iframe
+              src="https://calendar.google.com/calendar/embed?src=rodai2026%40gmail.com&ctz=America%2FMexico_City&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&bgcolor=%23FFFFFF&color=%234285F4"
+              title="Calendario — Google Calendar"
+              frameborder="0"
+              scrolling="no"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stacked view (vertical split) -->
+      <div class="split-view horizontal" id="view-stacked">
+        <div class="iframe-card" style="flex:.55;">
+          <div class="iframe-card-header">
+            <div class="icon-badge green">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="1" width="12" height="14" rx="1.5" fill="#34A853" opacity=".15"/>
+                <path d="M4 5.5h8M4 8h8M4 10.5h5" stroke="#34A853" stroke-width="1.4" stroke-linecap="round"/>
+                <rect x="2" y="1" width="12" height="14" rx="1.5" stroke="#34A853" stroke-width="1.2" fill="none"/>
+              </svg>
+            </div>
+            <div class="info">
+              <div class="label">Propiedades</div>
+              <div class="sublabel">Google Sheets</div>
+            </div>
+            <a class="iframe-link" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank">↗ Editar</a>
+          </div>
+          <div class="iframe-body">
+            <iframe src="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/htmlview?rm=minimal" title="Sheet"></iframe>
+          </div>
+        </div>
+        <div class="iframe-card" style="flex:.45;">
+          <div class="iframe-card-header">
+            <div class="icon-badge blue">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="2.5" width="14" height="12" rx="1.5" fill="#4285F4" opacity=".12"/>
+                <rect x="1" y="2.5" width="14" height="12" rx="1.5" stroke="#4285F4" stroke-width="1.2" fill="none"/>
+                <path d="M5 1v3M11 1v3M1 6.5h14" stroke="#4285F4" stroke-width="1.3" stroke-linecap="round"/>
+                <circle cx="5.5" cy="10" r=".9" fill="#4285F4"/>
+                <circle cx="10.5" cy="10" r=".9" fill="#4285F4"/>
+              </svg>
+            </div>
+            <div class="info">
+              <div class="label">Calendario</div>
+              <div class="sublabel">Google Calendar</div>
+            </div>
+            <a class="iframe-link" href="https://calendar.google.com/calendar/u/0" target="_blank">↗ Abrir</a>
+          </div>
+          <div class="iframe-body">
+            <iframe src="https://calendar.google.com/calendar/embed?src=rodai2026%40gmail.com&ctz=America%2FMexico_City&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&bgcolor=%23FFFFFF&color=%234285F4" title="Calendar" frameborder="0" scrolling="no"></iframe>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+  // ─── Live date ──────────────────────────────
+  function updateDate() {
+    const d = new Date();
+    const opts = { weekday: 'short', day: 'numeric', month: 'short' };
+    document.getElementById('live-date').textContent =
+      d.toLocaleDateString('es-MX', opts);
+  }
+  updateDate();
+
+  // ─── View switching ─────────────────────────
+  const topbarLabels = {
+    split:    'Vista completa <span>— Propiedades y Calendario</span>',
+    sheet:    'Propiedades <span>— Google Sheets</span>',
+    calendar: 'Calendario <span>— Google Calendar</span>',
+    stacked:  'Vista apilada <span>— Propiedades y Calendario</span>',
+  };
+
+  function setView(view) {
+    // hide all views
+    document.querySelectorAll('.split-view, .panel').forEach(el => {
+      el.classList.remove('active');
+    });
+
+    // show selected
+    const target = document.getElementById('view-' + view);
+    if (target) target.classList.add('active');
+
+    // update topbar label
+    document.getElementById('topbar-label').innerHTML = topbarLabels[view] || '';
+
+    // update sidebar nav items
+    document.querySelectorAll('.nav-item[data-view]').forEach(el => {
+      el.classList.toggle('active', el.dataset.view === view);
+    });
+
+    // update toggle buttons
+    document.querySelectorAll('.vt-btn[data-vt]').forEach(el => {
+      el.classList.toggle('active', el.dataset.vt === view);
+    });
+  }
+
+  // ─── Loading overlays ───────────────────────
+  function hideLoader(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      setTimeout(() => el.classList.add('hidden'), 300);
+    }
+  }
+
+  // ─── Tweaks panel ───────────────────────────
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "accentColor": "#C9A84C",
+    "sidebarColor": "#1A2B3C",
+    "calendarMode": "MONTH"
+  }/*EDITMODE-END*/;
+
+  // Tweaks protocol
+  window.addEventListener('message', (e) => {
+    if (e.data?.type === '__activate_edit_mode') showTweaks();
+    if (e.data?.type === '__deactivate_edit_mode') hideTweaks();
+  });
+  window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+  const tweaksPanel = document.createElement('div');
+  tweaksPanel.id = 'tweaks-panel';
+  tweaksPanel.style.cssText = `
+    position:fixed;bottom:20px;right:20px;z-index:9999;
+    background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+    box-shadow:0 8px 32px rgba(0,0,0,.14);padding:16px;
+    width:240px;display:none;font-family:'DM Sans',sans-serif;
+  `;
+  tweaksPanel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="font-size:13px;font-weight:600;color:#1A2B3C;">Tweaks</span>
+      <button onclick="closeTweaks()" style="background:none;border:none;cursor:pointer;color:#6B7A8D;font-size:18px;line-height:1;padding:0 2px;">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <label style="font-size:12px;color:#6B7A8D;font-weight:500;">Color de acento
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          ${['#C9A84C','#2563EB','#16A34A','#DC2626','#7C3AED'].map(c =>
+            `<div onclick="setAccent('${c}')" style="width:24px;height:24px;border-radius:6px;background:${c};cursor:pointer;border:2px solid transparent;" data-swatch="${c}"></div>`
+          ).join('')}
+        </div>
+      </label>
+      <label style="font-size:12px;color:#6B7A8D;font-weight:500;">Vista del calendario
+        <select id="cal-mode-sel" onchange="setCalMode(this.value)" style="margin-top:5px;width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;background:#f5f7fa;color:#1A2B3C;">
+          <option value="MONTH">Mes</option>
+          <option value="WEEK">Semana</option>
+          <option value="AGENDA">Agenda</option>
+        </select>
+      </label>
+      <label style="font-size:12px;color:#6B7A8D;font-weight:500;">Color de barra lateral
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          ${['#1A2B3C','#0F172A','#1C1917','#064E3B','#312E81'].map(c =>
+            `<div onclick="setSidebarColor('${c}')" style="width:24px;height:24px;border-radius:6px;background:${c};cursor:pointer;border:2px solid transparent;" data-sidebar-swatch="${c}"></div>`
+          ).join('')}
+        </div>
+      </label>
+    </div>
+  `;
+  document.body.appendChild(tweaksPanel);
+
+  function showTweaks() { tweaksPanel.style.display = 'block'; }
+  function hideTweaks() { tweaksPanel.style.display = 'none'; }
+  function closeTweaks() {
+    hideTweaks();
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  }
+
+  function setAccent(color) {
+    document.documentElement.style.setProperty('--accent', color);
+    document.querySelectorAll('[data-swatch]').forEach(el => {
+      el.style.border = el.dataset.swatch === color ? `2px solid ${color}` : '2px solid transparent';
+      el.style.boxShadow = el.dataset.swatch === color ? `0 0 0 2px white inset` : 'none';
+    });
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { accentColor: color } }, '*');
+  }
+
+  function setSidebarColor(color) {
+    document.documentElement.style.setProperty('--sidebar-bg', color);
+    document.querySelector('.sidebar').style.background = color;
+    document.querySelectorAll('[data-sidebar-swatch]').forEach(el => {
+      el.style.border = el.dataset.sidebarSwatch === color ? '2px solid #C9A84C' : '2px solid transparent';
+    });
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { sidebarColor: color } }, '*');
+  }
+
+  function setCalMode(mode) {
+    const calSrc = `https://calendar.google.com/calendar/embed?src=rodai2026%40gmail.com&ctz=America%2FMexico_City&mode=${mode}&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&bgcolor=%23FFFFFF&color=%234285F4`;
+    document.querySelectorAll('iframe[title*="Calendario"], iframe[title="Calendar"]').forEach(iframe => {
+      iframe.src = calSrc;
+    });
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { calendarMode: mode } }, '*');
+  }
+</script>
+</body>
+</html>

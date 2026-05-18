@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Control — RH Inmobiliaria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #FAF6F1;
+      --sidebar:   #261710;
+      --sidebar-w: 220px;
+      --primary:   #2563EB;
+      --primary-l: #EFF6FF;
+      --amber:     #D4943A;
+      --amber-l:   #FEF3E2;
+      --surface:   #FFFFFF;
+      --border:    #EDE3D8;
+      --border-l:  #F5EFE7;
+      --t1:        #261710;
+      --t2:        #7A6050;
+      --t3:        #B09A8A;
+      --green:     #2E7D52;
+      --green-l:   #E8F5ED;
+      --red:       #C0392B;
+      --red-l:     #FDE8E6;
+      --shadow:    0 1px 3px rgba(38,23,16,.07), 0 1px 2px rgba(38,23,16,.04);
+      --shadow-md: 0 4px 20px rgba(38,23,16,.10);
+      --r:         10px;
+    }
+
+    html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--t1); overflow: hidden; }
+
+    /* ── LAYOUT ──────────────────────────────── */
+    .app { display: flex; height: 100vh; width: 100vw; }
+
+    /* ── SIDEBAR ─────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--sidebar);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sb-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+    .sb-mark {
+      width: 38px; height: 38px;
+      background: var(--primary);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .sb-names { display: flex; flex-direction: column; }
+    .sb-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: .2px;
+    }
+    .sb-sub {
+      font-size: 10px;
+      color: rgba(255,255,255,.38);
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .sb-nav {
+      flex: 1;
+      padding: 18px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      overflow-y: auto;
+    }
+    .sb-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.24);
+      padding: 10px 8px 5px;
+    }
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,.5);
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: background .14s, color .14s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      text-decoration: none;
+    }
+    .sb-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+    .sb-item.active { background: rgba(194,85,42,.22); color: #F0A07A; font-weight: 500; }
+    .sb-item svg { flex-shrink: 0; }
+
+    .sb-footer {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .sb-date {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: rgba(255,255,255,.36);
+    }
+    .pulse {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #5EC98A;
+      box-shadow: 0 0 0 2px rgba(94,201,138,.3);
+      flex-shrink: 0;
+    }
+
+    /* ── MAIN ────────────────────────────────── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+    /* ── TOP BAR ─────────────────────────────── */
+    .topbar {
+      height: 54px;
+      min-height: 54px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      gap: 14px;
+    }
+    .topbar-page { font-size: 14.5px; font-weight: 600; color: var(--t1); flex: 1; }
+    .topbar-page small { font-weight: 400; color: var(--t2); }
+
+    .tb-actions { display: flex; align-items: center; gap: 8px; }
+    .tb-btn {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--t2);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      text-decoration: none;
+      transition: background .13s;
+      white-space: nowrap;
+    }
+    .tb-btn:hover { background: var(--bg); }
+    .tb-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .tb-btn.primary:hover { opacity: .88; background: var(--primary); }
+
+    /* ── CONTENT ─────────────────────────────── */
+    .content {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 22px 18px;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    /* ── STAT CARDS ──────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: var(--r) var(--r) 0 0;
+    }
+    .stat-card.orange::before { background: var(--primary); }
+    .stat-card.amber::before  { background: var(--amber); }
+    .stat-card.green::before  { background: var(--green); }
+    .stat-card.red::before    { background: var(--red); }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      color: var(--t3);
+    }
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--t1);
+      line-height: 1;
+    }
+    .stat-sub {
+      font-size: 11.5px;
+      color: var(--t2);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 100px;
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+    .badge.green { background: var(--green-l); color: var(--green); }
+    .badge.red   { background: var(--red-l);   color: var(--red); }
+    .badge.amber { background: var(--amber-l);  color: #9A6700; }
+    .badge.orange { background: var(--primary-l); color: var(--primary); }
+
+    /* ── MAIN GRID ───────────────────────────── */
+    .main-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 14px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ── IFRAME CARD ─────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-l);
+      flex-shrink: 0;
+    }
+    .card-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-icon.green { background: #E8F5ED; }
+    .card-icon.blue  { background: #E8F0FE; }
+    .card-info { flex: 1; min-width: 0; }
+    .card-title { font-size: 13px; font-weight: 600; color: var(--t1); }
+    .card-desc  { font-size: 11px; color: var(--t3); margin-top: 1px; }
+    .card-actions { display: flex; gap: 6px; }
+
+    .chip-link {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--t2);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .12s;
+      white-space: nowrap;
+    }
+    .chip-link:hover { background: var(--border-l); }
+    .chip-link.primary-chip {
+      background: var(--primary-l);
+      border-color: rgba(194,85,42,.2);
+      color: var(--primary);
+    }
+    .chip-link.primary-chip:hover { background: #F3DDD4; }
+
+    .card-body {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .card-body iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Loading overlay */
+    .loader {
+      position: absolute;
+      inset: 0;
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 2;
+      transition: opacity .4s;
+    }
+    .loader.gone { opacity: 0; pointer-events: none; }
+    .spin {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: rot .7s linear infinite;
+    }
+    @keyframes rot { to { transform: rotate(360deg); } }
+    .loader-txt { font-size: 12px; color: var(--t3); }
+
+    /* ── RIGHT COLUMN ────────────────────────── */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ── SHORTCUTS ───────────────────────────── */
+    .shortcuts {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+    .shortcuts-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-l);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--t2);
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+    .shortcuts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border-l);
+    }
+    .shortcut {
+      background: var(--surface);
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+      transition: background .12s;
+      cursor: pointer;
+    }
+    .shortcut:hover { background: var(--bg); }
+    .shortcut-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .shortcut-text { display: flex; flex-direction: column; }
+    .shortcut-name { font-size: 12px; font-weight: 600; color: var(--t1); }
+    .shortcut-hint { font-size: 10.5px; color: var(--t3); margin-top: 1px; }
+    .shortcuts-grid .shortcut:first-child { border-radius: 0 0 0 0; }
+    .shortcuts-grid .shortcut:last-child { border-radius: 0 0 var(--r) var(--r); }
+
+    /* ── UPCOMING CITAS ──────────────────────── */
+    .upcoming-list {
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .cita-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border-l);
+    }
+    .cita-date-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 7px;
+      background: var(--primary-l);
+      flex-shrink: 0;
+    }
+    .cita-day  { font-size: 16px; font-weight: 700; color: var(--primary); line-height: 1; }
+    .cita-mon  { font-size: 9px; font-weight: 600; color: var(--primary); opacity: .7; text-transform: uppercase; }
+    .cita-info { flex: 1; min-width: 0; }
+    .cita-name { font-size: 12.5px; font-weight: 600; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cita-tipo { font-size: 11px; color: var(--t2); }
+    .cita-status { flex-shrink: 0; }
+
+    /* ── CALENDAR CARD ───────────────────────── */
+    .cal-card {
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* ── SCROLLBAR ───────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── PRIVATE WARNING ─────────────────────── */
+    .private-notice {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 32px;
+      text-align: center;
+      background: var(--surface);
+      z-index: 1;
+    }
+    .private-notice svg { opacity: .4; }
+    .private-notice h3 { font-size: 14px; font-weight: 600; color: var(--t1); }
+    .private-notice p  { font-size: 12.5px; color: var(--t2); line-height: 1.6; max-width: 280px; }
+    .notice-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: opacity .15s;
+    }
+    .notice-btn:hover { opacity: .88; }
+
+    /* ── TWEAKS PANEL ────────────────────────── */
+    #tweaks {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      z-index: 9999;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-md);
+      padding: 18px;
+      width: 248px;
+      display: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .tw-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .tw-title { font-size: 13px; font-weight: 700; color: var(--t1); }
+    .tw-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 18px; color: var(--t2); line-height: 1; padding: 0 2px;
+    }
+    .tw-section { margin-bottom: 14px; }
+    .tw-lbl { font-size: 11px; font-weight: 600; color: var(--t2); margin-bottom: 8px; display: block; }
+    .tw-swatches { display: flex; gap: 7px; flex-wrap: wrap; }
+    .tw-swatch {
+      width: 26px; height: 26px; border-radius: 7px;
+      cursor: pointer; border: 2px solid transparent;
+      transition: transform .12s, border-color .12s;
+    }
+    .tw-swatch:hover { transform: scale(1.1); }
+    .tw-swatch.sel { border-color: var(--t1); }
+    .tw-select {
+      width: 100%; padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--t1);
+      cursor: pointer;
+    }
+    .tw-select:focus { outline: none; border-color: var(--primary); }
+    .tw-toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 0;
+    }
+    .tw-toggle-lbl { font-size: 12px; color: var(--t1); }
+    .toggle-pill {
+      width: 36px; height: 20px;
+      border-radius: 10px;
+      background: var(--border);
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background .2s;
+    }
+    .toggle-pill::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      transition: left .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle-pill.on { background: var(--primary); }
+    .toggle-pill.on::after { left: 18px; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── SIDEBAR ──────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-mark">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2.5L3.5 8.5V17h4.5v-4.5h4V17h4.5V8.5L10 2.5Z" fill="white" fill-opacity=".9"/>
+        </svg>
+      </div>
+      <div class="sb-names">
+        <div class="sb-brand">RH Inmobiliaria</div>
+        <div class="sb-sub">Panel de Control</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-label">Vistas</div>
+
+      <button class="sb-item active" onclick="showMain()">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <rect x="1" y="1" width="5.5" height="5.5" rx="1.5" fill="currentColor"/>
+          <rect x="8.5" y="1" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".5"/>
+          <rect x="1" y="8.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".5"/>
+          <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".5"/>
+        </svg>
+        Dashboard
+      </button>
+
+      <button class="sb-item" onclick="showSheet()">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <rect x="1" y="1" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.3" fill="none"/>
+          <path d="M1 5h13M5 5v9" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+        Propiedades
+      </button>
+
+      <button class="sb-item" onclick="showCalendar()">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <rect x="1" y="2" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.3" fill="none"/>
+          <path d="M5 1v2M10 1v2M1 6h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Calendario
+      </button>
+
+      <div class="sb-label" style="margin-top:6px;">Accesos</div>
+
+      <a class="sb-item" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M8 2H3.5A1.5 1.5 0 002 3.5v8A1.5 1.5 0 003.5 13h8A1.5 1.5 0 0013 11.5V7l-5-5z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+          <path d="M8 2v4.5H13" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M5 8.5h5M5 10.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Abrir Sheet
+      </a>
+
+      <a class="sb-item" href="https://calendar.google.com/calendar/u/0" target="_blank">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M11.5 2H3.5A1.5 1.5 0 002 3.5v9A1.5 1.5 0 003.5 14h8A1.5 1.5 0 0013 12.5v-9A1.5 1.5 0 0011.5 2z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+          <path d="M5 1v2M10 1v2M2 5.5h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Abrir Calendar
+      </a>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-date">
+        <div class="pulse"></div>
+        <span id="live-date">—</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ─────────────────────────────────── -->
+  <div class="main">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-page" id="page-title">Dashboard <small>— Resumen general</small></div>
+      <div class="tb-actions">
+        <a class="tb-btn" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M7 1.5h4v4M5 8L11 2M1 12V3a1 1 0 011-1h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Sheet
+        </a>
+        <a class="tb-btn" href="https://calendar.google.com/calendar/u/0" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M7 1.5h4v4M5 8L11 2M1 12V3a1 1 0 011-1h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Calendar
+        </a>
+        <button class="tb-btn primary" onclick="refreshAll()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M11 6.5A4.5 4.5 0 112 6.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M11 3.5v3h-3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Actualizar
+        </button>
+      </div>
+    </div>
+
+    <!-- ── DASHBOARD VIEW ───────────────────────── -->
+    <div class="content" id="view-dashboard" style="display:flex;">
+
+      <!-- STATS -->
+      <div class="stats-row">
+        <div class="stat-card orange">
+          <div class="stat-label">Total Clientes</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-sub">registros en el sheet</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Citas este mes</div>
+          <div class="stat-value" id="stat-citas">—</div>
+          <div class="stat-sub"><span class="badge amber">Mayo 2026</span></div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Por Confirmar</div>
+          <div class="stat-value" id="stat-pendientes">—</div>
+          <div class="stat-sub">sin confirmar aún</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Confirmados</div>
+          <div class="stat-value" id="stat-conf">—</div>
+          <div class="stat-sub"><span class="badge green">citas confirmadas</span></div>
+        </div>
+      </div>
+
+      <!-- GRID -->
+      <div class="main-grid">
+
+        <!-- LEFT: Google Sheet -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon green">
+              <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                <rect x="2" y="1" width="13" height="15" rx="2" fill="#34A85320"/>
+                <rect x="2" y="1" width="13" height="15" rx="2" stroke="#34A853" stroke-width="1.3"/>
+                <path d="M5 6h7M5 9h7M5 12h4" stroke="#34A853" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-info">
+              <div class="card-title">Clientes y Propiedades</div>
+              <div class="card-desc">Google Sheets · RH Inmobiliaria</div>
+            </div>
+            <div class="card-actions">
+              <a class="chip-link primary-chip" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                  <path d="M6 1h4v4M4 7l6-6M1 10V2.5A.5.5 0 011.5 2H4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Editar
+              </a>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="loader" id="load-sheet">
+              <div class="spin"></div>
+              <div class="loader-txt">Cargando sheet…</div>
+            </div>
+            <iframe
+              id="sheet-iframe"
+              src="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/htmlview?rm=minimal"
+              onload="hideLoader('load-sheet')"
+              title="Clientes — Google Sheets">
+            </iframe>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right-col">
+
+          <!-- Shortcuts -->
+          <div class="shortcuts">
+            <div class="shortcuts-header">Accesos rápidos</div>
+            <div class="shortcuts-grid">
+              <a class="shortcut" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank">
+                <div class="shortcut-icon" style="background:#E8F5ED;">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3v10M3 8h10" stroke="#34A853" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="shortcut-text">
+                  <div class="shortcut-name">Nuevo cliente</div>
+                  <div class="shortcut-hint">Agregar al sheet</div>
+                </div>
+              </a>
+              <a class="shortcut" href="https://calendar.google.com/calendar/u/0/r/eventedit" target="_blank">
+                <div class="shortcut-icon" style="background:#FEF3E2;">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="1" y="2" width="14" height="13" rx="2" stroke="#D4943A" stroke-width="1.4" fill="none"/>
+                    <path d="M5 1v2M11 1v2M1 5.5h14M8 8v4M6 10h4" stroke="#D4943A" stroke-width="1.3" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="shortcut-text">
+                  <div class="shortcut-name">Nueva cita</div>
+                  <div class="shortcut-hint">En Google Calendar</div>
+                </div>
+              </a>
+              <a class="shortcut" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank">
+                <div class="shortcut-icon" style="background:#F9EDE7;">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="6" stroke="#C2552A" stroke-width="1.4"/>
+                    <path d="M8 5v4M8 11v.5" stroke="#C2552A" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="shortcut-text">
+                  <div class="shortcut-name">Confirmar cita</div>
+                  <div class="shortcut-hint">Actualizar estado</div>
+                </div>
+              </a>
+              <a class="shortcut" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/export?format=xlsx" target="_blank">
+                <div class="shortcut-icon" style="background:#EEF2FF;">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 13h10M8 3v7M5 7l3 3 3-3" stroke="#4F46E5" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="shortcut-text">
+                  <div class="shortcut-name">Exportar Excel</div>
+                  <div class="shortcut-hint">Descargar .xlsx</div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Próximas citas (demo) -->
+          <div class="card" style="flex-shrink:0;">
+            <div class="card-header">
+              <div class="card-icon" style="background:#FEF3E2;">
+                <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                  <rect x="1" y="2.5" width="15" height="13" rx="2" fill="#D4943A20"/>
+                  <rect x="1" y="2.5" width="15" height="13" rx="2" stroke="#D4943A" stroke-width="1.3"/>
+                  <path d="M5 1v3M12 1v3M1 7h15" stroke="#D4943A" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="card-info">
+                <div class="card-title">Próximas citas</div>
+                <div class="card-desc">Según columna "Fecha Cita"</div>
+              </div>
+              <button class="chip-link" onclick="showCalendar()">Ver calendario →</button>
+            </div>
+            <div class="upcoming-list" id="citas-list">
+              <!-- populated by JS or shows placeholder -->
+              <div style="text-align:center;padding:16px 0;color:var(--t3);font-size:12px;">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="display:block;margin:0 auto 8px;opacity:.35">
+                  <rect x="2" y="4" width="24" height="21" rx="3" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M8 2v4M20 2v4M2 10h24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Las citas se muestran desde el Sheet.<br>Abre el Sheet para ver los datos.
+              </div>
+            </div>
+          </div>
+
+          <!-- Calendar -->
+          <div class="card cal-card">
+            <div class="card-header">
+              <div class="card-icon blue">
+                <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                  <rect x="1" y="2.5" width="15" height="13" rx="2" fill="#4285F420"/>
+                  <rect x="1" y="2.5" width="15" height="13" rx="2" stroke="#4285F4" stroke-width="1.3"/>
+                  <path d="M5 1v3M12 1v3M1 7h15" stroke="#4285F4" stroke-width="1.3" stroke-linecap="round"/>
+                  <circle cx="5.5" cy="11" r="1" fill="#4285F4"/>
+                  <circle cx="11.5" cy="11" r="1" fill="#4285F4"/>
+                </svg>
+              </div>
+              <div class="card-info">
+                <div class="card-title">Google Calendar</div>
+                <div class="card-desc">rodai2026@gmail.com</div>
+              </div>
+              <div class="card-actions">
+                <select id="cal-mode" class="chip-link" style="padding:4px 8px;font-size:11.5px;border-radius:6px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;" onchange="updateCalendar()">
+                  <option value="MONTH">Mes</option>
+                  <option value="WEEK">Semana</option>
+                  <option value="AGENDA">Agenda</option>
+                </select>
+                <a class="chip-link" href="https://calendar.google.com/calendar/u/0" target="_blank">↗</a>
+              </div>
+            </div>
+            <div class="card-body" style="position:relative;">
+              <div class="loader" id="load-cal">
+                <div class="spin"></div>
+                <div class="loader-txt">Cargando calendario…</div>
+              </div>
+              <div class="private-notice" id="cal-notice" style="display:none;">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                  <rect x="4" y="8" width="28" height="22" rx="3" stroke="currentColor" stroke-width="2"/>
+                  <path d="M10 8V7a8 8 0 0116 0v1" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="18" cy="20" r="2.5" fill="currentColor"/>
+                  <path d="M18 23v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <h3>Calendario privado</h3>
+                <p>Para ver el calendario aquí, necesitas activar la opción "Hacer disponible al público" en la configuración de Google Calendar.</p>
+                <a class="notice-btn" href="https://calendar.google.com/calendar/u/0/r/settings" target="_blank">Ir a Configuración</a>
+              </div>
+              <iframe
+                id="cal-iframe"
+                src="https://calendar.google.com/calendar/embed?src=rodai2026%40gmail.com&ctz=America%2FMexico_City&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&bgcolor=%23FFFFFF&color=%23C2552A"
+                onload="handleCalLoad(this)"
+                title="Calendario — Google Calendar"
+                frameborder="0">
+              </iframe>
+            </div>
+          </div>
+
+        </div><!-- /right-col -->
+      </div><!-- /main-grid -->
+    </div><!-- /view-dashboard -->
+
+    <!-- ── SHEET FULLSCREEN ─────────────────────── -->
+    <div class="content" id="view-sheet" style="display:none;">
+      <div class="card" style="flex:1;">
+        <div class="card-header">
+          <div class="card-icon green">
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+              <rect x="2" y="1" width="13" height="15" rx="2" fill="#34A85320"/>
+              <rect x="2" y="1" width="13" height="15" rx="2" stroke="#34A853" stroke-width="1.3"/>
+              <path d="M5 6h7M5 9h7M5 12h4" stroke="#34A853" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Propiedades — Vista completa</div>
+            <div class="card-desc">Nombre · Correo · Teléfono · Tipo Propiedad · Compra/Renta · Monto · Cita · Confirmado</div>
+          </div>
+          <a class="chip-link primary-chip" href="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/edit" target="_blank">
+            ↗ Editar en Google Sheets
+          </a>
+        </div>
+        <div class="card-body">
+          <iframe src="https://docs.google.com/spreadsheets/d/1AbwZJRkSVD3qtKBnRxgoKZDPt1IzO7vEvu6odm614zw/htmlview?rm=minimal" title="Sheet completo"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CALENDAR FULLSCREEN ──────────────────── -->
+    <div class="content" id="view-calendar" style="display:none;">
+      <div class="card" style="flex:1;">
+        <div class="card-header">
+          <div class="card-icon blue">
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+              <rect x="1" y="2.5" width="15" height="13" rx="2" fill="#4285F420"/>
+              <rect x="1" y="2.5" width="15" height="13" rx="2" stroke="#4285F4" stroke-width="1.3"/>
+              <path d="M5 1v3M12 1v3M1 7h15" stroke="#4285F4" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Calendario — Vista completa</div>
+            <div class="card-desc">Google Calendar · rodai2026@gmail.com</div>
+          </div>
+          <select id="cal-mode-full" class="chip-link" style="padding:4px 8px;font-size:11.5px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;" onchange="updateCalFull()">
+            <option value="MONTH">Mes</option>
+            <option value="WEEK">Semana</option>
+            <option value="AGENDA">Agenda</option>
+          </select>
+          <a class="chip-link" href="https://calendar.google.com/calendar/u/0" target="_blank">↗ Abrir</a>
+        </div>
+        <div class="card-body">
+          <iframe id="cal-iframe-full"
+            src="https://calendar.google.com/calendar/embed?src=rodai2026%40gmail.com&ctz=America%2FMexico_City&mode=MONTH&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&bgcolor=%23FFFFFF&color=%23C2552A"
+            title="Calendario completo" frameborder="0">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ── TWEAKS PANEL ────────────────────────────── -->
+<div id="tweaks">
+  <div class="tw-head">
+    <span class="tw-title">Tweaks</span>
+    <button class="tw-close" onclick="closeTweaks()">×</button>
+  </div>
+
+  <div class="tw-section">
+    <span class="tw-lbl">Color principal</span>
+    <div class="tw-swatches" id="accent-swatches">
+      <div class="tw-swatch" style="background:#C2552A;" data-color="#C2552A" onclick="setAccent('#C2552A','#F9EDE7')"></div>
+      <div class="tw-swatch sel" style="background:#2563EB;" data-color="#2563EB" onclick="setAccent('#2563EB','#EFF6FF')"></div>
+      <div class="tw-swatch" style="background:#059669;" data-color="#059669" onclick="setAccent('#059669','#ECFDF5')"></div>
+      <div class="tw-swatch" style="background:#7C3AED;" data-color="#7C3AED" onclick="setAccent('#7C3AED','#F5F3FF')"></div>
+      <div class="tw-swatch" style="background:#B45309;" data-color="#B45309" onclick="setAccent('#B45309','#FEF3C7')"></div>
+    </div>
+  </div>
+
+  <div class="tw-section">
+    <span class="tw-lbl">Color de barra lateral</span>
+    <div class="tw-swatches" id="sidebar-swatches">
+      <div class="tw-swatch sel" style="background:#261710;" data-color="#261710" onclick="setSidebar('#261710')"></div>
+      <div class="tw-swatch" style="background:#0F172A;" data-color="#0F172A" onclick="setSidebar('#0F172A')"></div>
+      <div class="tw-swatch" style="background:#064E3B;" data-color="#064E3B" onclick="setSidebar('#064E3B')"></div>
+      <div class="tw-swatch" style="background:#312E81;" data-color="#312E81" onclick="setSidebar('#312E81')"></div>
+      <div class="tw-swatch" style="background:#1C1917;" data-color="#1C1917" onclick="setSidebar('#1C1917')"></div>
+    </div>
+  </div>
+
+  <div class="tw-section">
+    <span class="tw-lbl">Vista del calendario</span>
+    <select class="tw-select" onchange="setCalMode(this.value)">
+      <option value="MONTH">Mensual</option>
+      <option value="WEEK">Semanal</option>
+      <option value="AGENDA">Agenda</option>
+    </select>
+  </div>
+
+  <div class="tw-section">
+    <div class="tw-toggle-row">
+      <span class="tw-toggle-lbl">Nota de calendario privado</span>
+      <button class="toggle-pill" id="notice-toggle" onclick="toggleCalNotice()"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── Live date ────────────────────────────────
+  const d = new Date();
+  document.getElementById('live-date').textContent =
+    d.toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+
+  // ─── Views ───────────────────────────────────
+  function showMain() {
+    setView('dashboard','Dashboard','Resumen general');
+    setSbActive(0);
+  }
+  function showSheet() {
+    setView('sheet','Propiedades','Vista completa del Sheet');
+    setSbActive(1);
+  }
+  function showCalendar() {
+    setView('calendar','Calendario','Google Calendar');
+    setSbActive(2);
+  }
+
+  function setView(id, title, sub) {
+    ['dashboard','sheet','calendar'].forEach(v => {
+      document.getElementById('view-'+v).style.display = 'none';
+    });
+    document.getElementById('view-'+id).style.display = 'flex';
+    document.getElementById('page-title').innerHTML = `${title} <small>— ${sub}</small>`;
+  }
+
+  function setSbActive(idx) {
+    document.querySelectorAll('.sb-item[data-nav]').forEach((el,i) => {
+      el.classList.toggle('active', i === idx);
+    });
+  }
+
+  // mark nav items for js reference
+  document.querySelectorAll('.sb-nav .sb-item').forEach((el,i) => {
+    el.dataset.nav = i;
+  });
+
+  // ─── Loaders ─────────────────────────────────
+  function hideLoader(id) {
+    const el = document.getElementById(id);
+    if (el) setTimeout(() => el.classList.add('gone'), 400);
+  }
+
+  // ─── Calendar ────────────────────────────────
+  let currentAccentHex = '2563EB';
+  function calSrc(mode) {
+    const hex = currentAccentHex || '2563EB';
+    return 'https://calendar.google.com/calendar/embed?src=rodai2026%40gmail.com&ctz=America%2FMexico_City&mode=' + mode + '&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&bgcolor=%23FFFFFF&color=%23' + hex;
+  }
+  function updateCalendar() {
+    const mode = document.getElementById('cal-mode').value;
+    document.getElementById('cal-iframe').src = calSrc(mode);
+  }
+  function updateCalFull() {
+    const mode = document.getElementById('cal-mode-full').value;
+    document.getElementById('cal-iframe-full').src = calSrc(mode);
+  }
+
+  let calLoadTries = 0;
+  function handleCalLoad(iframe) {
+    hideLoader('load-cal');
+    // If the calendar is private, Google may redirect to a login page
+    // We can't detect this cross-origin, so we show the notice toggle in tweaks
+  }
+
+  // ─── Refresh ─────────────────────────────────
+  function refreshAll() {
+    const si = document.getElementById('sheet-iframe');
+    const ci = document.getElementById('cal-iframe');
+    if (si) { const s = si.src; si.src=''; setTimeout(()=>si.src=s, 50); }
+    if (ci) { const s = ci.src; ci.src=''; setTimeout(()=>ci.src=s, 50); }
+    document.querySelectorAll('.loader').forEach(l => l.classList.remove('gone'));
+    setTimeout(()=>hideLoader('load-sheet'), 2500);
+    setTimeout(()=>hideLoader('load-cal'), 2500);
+  }
+
+  // ─── Tweaks protocol ─────────────────────────
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "accentColor": "#2563EB",
+    "accentLight": "#EFF6FF",
+    "sidebarColor": "#261710",
+    "calMode": "MONTH",
+    "showCalNotice": false
+  }/*EDITMODE-END*/;
+  currentAccentHex = (TWEAK_DEFAULTS.accentColor || '#2563EB').replace('#','');
+
+  window.addEventListener('message', e => {
+    if (e.data?.type === '__activate_edit_mode')   document.getElementById('tweaks').style.display = 'block';
+    if (e.data?.type === '__deactivate_edit_mode') document.getElementById('tweaks').style.display = 'none';
+  });
+  window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+  function closeTweaks() {
+    document.getElementById('tweaks').style.display = 'none';
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  }
+
+  function setAccent(color, light) {
+    document.documentElement.style.setProperty('--primary', color);
+    document.documentElement.style.setProperty('--primary-l', light);
+    document.querySelectorAll('[data-color]').forEach(el =>
+      el.classList.toggle('sel', el.dataset.color === color));
+    // update cal color
+    const ci = document.getElementById('cal-iframe');
+    const cif = document.getElementById('cal-iframe-full');
+    const mode = document.getElementById('cal-mode')?.value || 'MONTH';
+    currentAccentHex = color.replace('#','');
+    const newSrc = calSrc(mode);
+    if (ci) ci.src = newSrc;
+    if (cif) cif.src = newSrc;
+    window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ accentColor: color, accentLight: light }}, '*');
+  }
+
+  function setSidebar(color) {
+    document.documentElement.style.setProperty('--sidebar', color);
+    document.querySelector('.sidebar').style.background = color;
+    document.querySelectorAll('[data-sidebar]').forEach(el =>
+      el.classList.toggle('sel', el.dataset.sidebar === color));
+    document.querySelectorAll('#sidebar-swatches .tw-swatch').forEach(el =>
+      el.classList.toggle('sel', el.style.background === color || el.style.backgroundColor === color));
+    window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ sidebarColor: color }}, '*');
+  }
+
+  function setCalMode(mode) {
+    const ci = document.getElementById('cal-iframe');
+    const cif = document.getElementById('cal-iframe-full');
+    if (ci) ci.src = calSrc(mode);
+    if (cif) cif.src = calSrc(mode);
+    window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ calMode: mode }}, '*');
+  }
+
+  let calNoticeOn = false;
+  function toggleCalNotice() {
+    calNoticeOn = !calNoticeOn;
+    const notice = document.getElementById('cal-notice');
+    const btn = document.getElementById('notice-toggle');
+    if (notice) notice.style.display = calNoticeOn ? 'flex' : 'none';
+    if (btn) btn.classList.toggle('on', calNoticeOn);
+    window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ showCalNotice: calNoticeOn }}, '*');
+  }
+
+  // ─── Stats placeholder ────────────────────────
+  // These would ideally be populated from the Sheet API.
+  // For now, show dashes and a hint.
+  function setStats(total, citas, pend, conf) {
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-citas').textContent = citas;
+    document.getElementById('stat-pendientes').textContent = pend;
+    document.getElementById('stat-conf').textContent = conf;
+  }
+  // Placeholder — update manually or via Sheets API
+  setStats('—', '—', '—', '—');
+</script>
+
+</body>
+</html>
